@@ -1,0 +1,63 @@
+{
+  "version": "0.1.0",
+  "name": "decentralized_cloud_storage",
+  "instructions": [
+    {
+      "name": "initializeStorage",
+      "accounts": [
+        { "name": "user", "isMut": true, "isSigner": true },
+        { "name": "storageAccount", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "uploadFile",
+      "accounts": [
+        { "name": "user", "isMut": true, "isSigner": true },
+        { "name": "storageAccount", "isMut": true, "isSigner": false },
+        { "name": "fileAccount", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "fileHash", "type": "string" },
+        { "name": "fileName", "type": "string" },
+        { "name": "fileSize", "type": "u64" },
+        { "name": "ipfsHash", "type": "string" },
+        { "name": "encryptionKey", "type": { "option": "string" } }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "storageAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "owner", "type": "publicKey" },
+          { "name": "totalFiles", "type": "u32" },
+          { "name": "totalStorageUsed", "type": "u64" }
+        ]
+      }
+    },
+    {
+      "name": "fileAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "owner", "type": "publicKey" },
+          { "name": "fileHash", "type": "string" },
+          { "name": "fileName", "type": "string" },
+          { "name": "fileSize", "type": "u64" },
+          { "name": "ipfsHash", "type": "string" },
+          { "name": "uploadTimestamp", "type": "i64" },
+          { "name": "isPublic", "type": "bool" },
+          { "name": "accessCount", "type": "u64" }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "address": "2DWNrUtJXqnA9qu444yyACg2VXnXmEqwBPG7Q7cgM1NM"
+  }
+}
