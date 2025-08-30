@@ -1,0 +1,22 @@
+diff --git a/node_modules/electron-fetch/lib/index.es.js b/node_modules/electron-fetch/lib/index.es.js
+index bcd8e05..ece1329 100644
+--- a/node_modules/electron-fetch/lib/index.es.js
++++ b/node_modules/electron-fetch/lib/index.es.js
+@@ -1254,10 +1254,15 @@ function getNodeRequestOptions(request) {
+ 
+ let electron; // istanbul ignore else
+ 
+-if (process.versions.electron) {
+-  electron = require('electron');
++if (typeof process !== "undefined" && process.versions?.electron) {
++  try {
++    electron = require("electron");
++  } catch {
++    electron = null;
++  }
+ }
+ 
++
+ const isReady = electron && electron.app && !electron.app.isReady() ? new Promise(resolve => electron.app.once('ready', resolve)) : Promise.resolve();
+ /**
+  * Fetch function

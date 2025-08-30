@@ -2,13 +2,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  webpack: (config, { isServer }) => {
-    // Prevent "electron" from being bundled
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      "electron-fetch": "cross-fetch", // or "cross-fetch"
       electron: false,
     };
-
     return config;
   },
 };
