@@ -1,11 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
-import { Program, AnchorProvider, Idl } from "@coral-xyz/anchor";
+import { Program, AnchorProvider, Idl, BN } from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram } from "@solana/web3.js";
 import { uploadToIPFS } from "@/lib/ipfs/upload";
 import idl from "@/lib/idl.json";
 
-const PROGRAM_ID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID!);
+// ✅ Safer PROGRAM_ID initialization
+const programIdString = process.env.NEXT_PUBLIC_PROGRAM_ID;
+if (!programIdString) {
+  throw new Error("❌ NEXT_PUBLIC_PROGRAM_ID is not set in environment");
+}
+const PROGRAM_ID = new PublicKey(programIdString);
 
 export interface FileData {
   id: string;
@@ -46,8 +51,8 @@ export const useStorageProgram = () => {
         wallet,
         AnchorProvider.defaultOptions()
       );
-      const program = new Program(idl as Idl, PROGRAM_ID, provider);
-      setProgram(program);
+      const programInstance = new Program(idl as Idl, PROGRAM_ID, provider);
+      setProgram(programInstance);
     } else {
       setProgram(null);
     }
@@ -99,11 +104,11 @@ export const useStorageProgram = () => {
         })
         .rpc();
 
-      console.log("Storage initialized:", tx);
+      console.log("✅ Storage initialized:", tx);
       setIsInitialized(true);
       await loadStorageInfo();
     } catch (error) {
-      console.error("Initialize storage error:", error);
+      console.error("❌ Initialize storage error:", error);
       throw error;
     } finally {
       setLoading(false);
@@ -116,11 +121,8 @@ export const useStorageProgram = () => {
 
     setLoading(true);
     try {
-      // Upload to IPFS first
       const ipfsHash = await uploadToIPFS(file);
-
-      // Generate file hash
-      const fileHash = Math.random().toString(36).substring(7); // Replace with proper hash
+      const fileHash = Math.random().toString(36).substring(7); // TODO: replace with real hash
 
       const storageAccount = await getStorageAccountPDA();
       const fileAccount = await getFileAccountPDA(fileHash);
@@ -129,7 +131,7 @@ export const useStorageProgram = () => {
         .uploadFile(
           fileHash,
           file.name,
-          new anchor.BN(file.size),
+          new BN(file.size), // ✅ fixed BN import
           ipfsHash,
           null // encryption_key
         )
@@ -141,11 +143,11 @@ export const useStorageProgram = () => {
         })
         .rpc();
 
-      console.log("File uploaded:", tx);
+      console.log("✅ File uploaded:", tx);
       await loadFiles();
       await loadStorageInfo();
     } catch (error) {
-      console.error("Upload file error:", error);
+      console.error("❌ Upload file error:", error);
       throw error;
     } finally {
       setLoading(false);
@@ -168,7 +170,7 @@ export const useStorageProgram = () => {
         totalStorageUsed: accountInfo.totalStorageUsed.toNumber(),
       });
     } catch (error) {
-      console.error("Load storage info error:", error);
+      console.error("❌ Load storage info error:", error);
     }
   };
 
@@ -180,7 +182,7 @@ export const useStorageProgram = () => {
       const fileAccounts = await program.account.fileAccount.all([
         {
           memcmp: {
-            offset: 8, // Discriminator
+            offset: 8, // discriminator
             bytes: wallet.publicKey.toBase58(),
           },
         },
@@ -200,7 +202,7 @@ export const useStorageProgram = () => {
 
       setFiles(filesData);
     } catch (error) {
-      console.error("Load files error:", error);
+      console.error("❌ Load files error:", error);
     }
   };
 
@@ -219,11 +221,10 @@ export const useStorageProgram = () => {
         })
         .view();
 
-      // Handle file download logic here
-      console.log("File info:", result);
-      await loadFiles(); // Refresh to update access count
+      console.log("✅ File info:", result);
+      await loadFiles(); // refresh access count
     } catch (error) {
-      console.error("Download file error:", error);
+      console.error("❌ Download file error:", error);
       throw error;
     }
   };
@@ -246,11 +247,11 @@ export const useStorageProgram = () => {
         })
         .rpc();
 
-      console.log("File deleted:", tx);
+      console.log("✅ File deleted:", tx);
       await loadFiles();
       await loadStorageInfo();
     } catch (error) {
-      console.error("Delete file error:", error);
+      console.error("❌ Delete file error:", error);
       throw error;
     } finally {
       setLoading(false);
@@ -273,10 +274,10 @@ export const useStorageProgram = () => {
         })
         .rpc();
 
-      console.log("File shared:", tx);
+      console.log("✅ File shared:", tx);
       await loadFiles();
     } catch (error) {
-      console.error("Share file error:", error);
+      console.error("❌ Share file error:", error);
       throw error;
     } finally {
       setLoading(false);
